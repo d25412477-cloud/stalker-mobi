@@ -1,0 +1,37 @@
+
+name: Build S.T.A.L.K.E.R. Mobile APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.7.2
+
+    steps:
+      - name: Download project
+        uses: actions/checkout@v4
+
+      - name: Setup Godot
+        run: |
+          if [ "$HOME" != "/root" ]; then
+            mkdir -p ~/.config ~/.local/share/godot/export_templates
+            cp -a /root/.config/godot ~/.config/
+            cp -a /root/.local/share/godot/export_templates/. ~/.local/share/godot/export_templates/
+          fi
+
+      - name: Check project
+        run: godot --headless --editor --path . --quit
+
+      - name: Build Android APK
+        run: |
+          mkdir -p build/android
+          godot --headless --path . --export-debug "Android Debug" build/android/stalker-mobile.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: stalker-mobile-apk
+          path: build/android/stalker-mobile.apk
