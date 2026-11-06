@@ -18,8 +18,10 @@ var jump_requested = false
 var camera_rotation = 0.0
 
 func _ready():
+    randomize()
     create_world_collision()
     create_player()
+    generate_world()
 
 func create_world_collision():
     var floor = StaticBody3D.new()
