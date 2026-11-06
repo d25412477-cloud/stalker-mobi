@@ -13,7 +13,7 @@ var move_input = Vector2.ZERO
 var move_start = Vector2.ZERO
 var move_touch_index = -1
 var look_touch_index = -1
-var camera_rotation = 0.0
+var camera_rotation = -0.10
 var jump_requested = false
 
 var health_value = 100
@@ -30,6 +30,7 @@ var message_label: Label
 var anomalies = []
 var scanner_model: MeshInstance3D
 
+
 func _ready():
     randomize()
     create_world_collision()
@@ -38,6 +39,7 @@ func _ready():
     create_anomalies()
     create_hud()
     create_scanner_model()
+
 
 func create_world_collision():
     var floor = StaticBody3D.new()
@@ -51,11 +53,14 @@ func create_world_collision():
     floor.add_child(shape)
     floor.position.y = -0.6
 
+
 func create_player():
     player = CharacterBody3D.new()
     player.name = "Player"
     add_child(player)
-    player.position = Vector3(0, 1.5, 0)
+
+    # Исправлена высота персонажа
+    player.position = Vector3(0, 0.05, 0)
 
     var collision = CollisionShape3D.new()
     var capsule = CapsuleShape3D.new()
@@ -66,9 +71,15 @@ func create_player():
     player.add_child(collision)
 
     camera = Camera3D.new()
-    camera.position.y = 1.6
+    camera.position = Vector3(0, 1.55, 0)
+
+    # Настройки камеры для телефона
+    camera.fov = 85
     camera.current = true
+    camera.rotation.x = camera_rotation
+
     player.add_child(camera)
+
 
 func _physics_process(delta):
     if not player:
@@ -78,6 +89,7 @@ func _physics_process(delta):
         player.velocity.y -= gravity * delta
 
     var direction = Vector3.ZERO
+
     direction -= player.global_basis.z * move_input.y
     direction += player.global_basis.x * move_input.x
 
@@ -102,9 +114,11 @@ func _physics_process(delta):
     jump_requested = false
     player.move_and_slide()
 
+
 func _process(delta):
     if scanner_active:
         scanner_time -= delta
+
         if scanner_time <= 0:
             scanner_active = false
             scanner_label.text = "СКАНЕР"
@@ -115,6 +129,7 @@ func _process(delta):
 
     update_anomalies()
 
+
 func _input(event):
     var screen_size = get_viewport().get_visible_rect().size
 
@@ -124,15 +139,18 @@ func _input(event):
                 move_touch_index = event.index
                 move_start = event.position
                 move_input = Vector2.ZERO
+
             elif event.position.x > screen_size.x * 0.5:
                 if event.position.x > screen_size.x * 0.78 and event.position.y > screen_size.y * 0.72:
                     jump_requested = true
                 else:
                     look_touch_index = event.index
+
         else:
             if event.index == move_touch_index:
                 move_touch_index = -1
                 move_input = Vector2.ZERO
+
             if event.index == look_touch_index:
                 look_touch_index = -1
 
@@ -140,23 +158,32 @@ func _input(event):
         if event.index == move_touch_index:
             var offset = (event.position - move_start) / 100.0
             move_input = offset.limit_length(1.0)
+
         elif event.index == look_touch_index:
             rotate_camera(event.relative)
 
     if event is InputEventMouseMotion:
         rotate_camera(event.relative)
 
+
 func rotate_camera(delta):
     if not player or not camera:
         return
 
     player.rotate_y(-delta.x * mouse_sensitivity)
+
     camera_rotation -= delta.y * mouse_sensitivity
     camera_rotation = clamp(camera_rotation, -1.4, 1.4)
+
     camera.rotation.x = camera_rotation
 
+
 func generate_world():
-    create_box(Vector3(5, 0.12, 100), Vector3(0, 0.02, -40), Color(0.16, 0.16, 0.14))
+    create_box(
+        Vector3(5, 0.12, 100),
+        Vector3(0, 0.02, -40),
+        Color(0.16, 0.16, 0.14)
+    )
 
     for i in range(55):
         var x = randf_range(-45, 45)
@@ -170,6 +197,7 @@ func generate_world():
     create_house(Vector3(18, 0, -25))
     create_house(Vector3(-20, 0, -42))
     create_house(Vector3(22, 0, -65))
+
 
 func create_tree(pos: Vector3):
     var trunk = CylinderMesh.new()
@@ -200,11 +228,32 @@ func create_tree(pos: Vector3):
     foliage.material_override = green
     add_child(foliage)
 
+
 func create_house(pos: Vector3):
-    create_box(Vector3(8, 4, 7), pos + Vector3(0, 2, 0), Color(0.30, 0.27, 0.21))
-    create_box(Vector3(9, 0.5, 8), pos + Vector3(0, 4.2, 0), Color(0.12, 0.13, 0.12))
-    create_box(Vector3(1.2, 1.5, 0.15), pos + Vector3(0, 1.1, -3.58), Color(0.12, 0.08, 0.05))
-    create_box(Vector3(1.3, 1.2, 0.15), pos + Vector3(-2.5, 2.5, -3.58), Color(0.08, 0.12, 0.13))
+    create_box(
+        Vector3(8, 4, 7),
+        pos + Vector3(0, 2, 0),
+        Color(0.30, 0.27, 0.21)
+    )
+
+    create_box(
+        Vector3(9, 0.5, 8),
+        pos + Vector3(0, 4.2, 0),
+        Color(0.12, 0.13, 0.12)
+    )
+
+    create_box(
+        Vector3(1.2, 1.5, 0.15),
+        pos + Vector3(0, 1.1, -3.58),
+        Color(0.12, 0.08, 0.05)
+    )
+
+    create_box(
+        Vector3(1.3, 1.2, 0.15),
+        pos + Vector3(-2.5, 2.5, -3.58),
+        Color(0.08, 0.12, 0.13)
+    )
+
 
 func create_box(size: Vector3, pos: Vector3, color: Color):
     var mesh = BoxMesh.new()
@@ -221,14 +270,16 @@ func create_box(size: Vector3, pos: Vector3, color: Color):
     object.material_override = material
     add_child(object)
 
+
 func create_anomalies():
     create_anomaly(Vector3(10, 0.2, -28))
     create_anomaly(Vector3(-13, 0.2, -48))
     create_anomaly(Vector3(8, 0.2, -72))
 
-    create_artifact(Vector3(10, 0.8, -28))
-    create_artifact(Vector3(-13, 0.8, -48))
-    create_artifact(Vector3(8, 0.8, -72))
+    create_artifact(Vector3(12, 0.8, -28))
+    create_artifact(Vector3(-11, 0.8, -48))
+    create_artifact(Vector3(10, 0.8, -72))
+
 
 func create_anomaly(pos: Vector3):
     var area = Area3D.new()
@@ -255,10 +306,12 @@ func create_anomaly(pos: Vector3):
     material.emission_enabled = true
     material.emission = Color(0.1, 1.0, 0.25)
     material.emission_energy_multiplier = 1.5
-    visual.material_override = material
 
+    visual.material_override = material
     area.add_child(visual)
+
     anomalies.append(area)
+
 
 func create_artifact(pos: Vector3):
     var area = Area3D.new()
@@ -283,6 +336,7 @@ func create_artifact(pos: Vector3):
     material.emission_enabled = true
     material.emission = Color(0.1, 1.0, 0.3)
     material.emission_energy_multiplier = 3.0
+
     visual.material_override = material
     area.add_child(visual)
 
@@ -293,6 +347,7 @@ func create_artifact(pos: Vector3):
             message_label.text = "Артефакт найден!"
             area.queue_free()
     )
+
 
 func update_anomalies():
     if not player:
@@ -306,6 +361,7 @@ func update_anomalies():
 
         if distance < 3.0:
             message_label.text = "ОПАСНО! АНОМАЛИЯ РЯДОМ"
+
 
 func use_scanner():
     if scanner_active:
@@ -333,17 +389,23 @@ func use_scanner():
 
     scanner_label.text = "СКАНИРОВАНИЕ..."
 
+
 func create_scanner_model():
     scanner_model = MeshInstance3D.new()
+
     var mesh = BoxMesh.new()
     mesh.size = Vector3(0.35, 0.22, 0.5)
     scanner_model.mesh = mesh
-    scanner_model.position = Vector3(0.45, -0.35, -0.7)
+
+    # Сканер теперь ближе к центру и не должен обрезаться
+    scanner_model.position = Vector3(0.25, -0.28, -0.55)
+    scanner_model.scale = Vector3(0.8, 0.8, 0.8)
 
     var material = StandardMaterial3D.new()
     material.albedo_color = Color(0.02, 0.12, 0.05)
     material.metallic = 0.5
     scanner_model.material_override = material
+
     camera.add_child(scanner_model)
 
     var screen = MeshInstance3D.new()
@@ -357,8 +419,10 @@ func create_scanner_model():
     screen_material.emission_enabled = true
     screen_material.emission = Color(0.0, 1.0, 0.2)
     screen_material.emission_energy_multiplier = 2.5
+
     screen.material_override = screen_material
     scanner_model.add_child(screen)
+
 
 func create_hud():
     var layer = CanvasLayer.new()
