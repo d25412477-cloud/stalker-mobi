@@ -79,12 +79,11 @@ func create_player():
 	create_scanner()
 
 func create_scanner():
-	# Основной корпус сканера
 	var body = MeshInstance3D.new()
 	var mesh = BoxMesh.new()
-	mesh.size = Vector3(0.22, 0.18, 0.55)
+	mesh.size = Vector3(0.13, 0.12, 0.32)
 	body.mesh = mesh
-	body.position = Vector3(0.35, -0.32, -0.65)
+	body.position = Vector3(0.27, -0.24, -0.48)
 
 	var metal = StandardMaterial3D.new()
 	metal.albedo_color = Color(0.12, 0.16, 0.14)
@@ -93,12 +92,11 @@ func create_scanner():
 	body.material_override = metal
 	camera.add_child(body)
 
-	# Зелёный экран
 	var screen = MeshInstance3D.new()
 	var screen_mesh = BoxMesh.new()
-	screen_mesh.size = Vector3(0.16, 0.025, 0.16)
+	screen_mesh.size = Vector3(0.10, 0.015, 0.09)
 	screen.mesh = screen_mesh
-	screen.position = Vector3(0.35, -0.23, -0.72)
+	screen.position = Vector3(0.27, -0.17, -0.53)
 
 	var green = StandardMaterial3D.new()
 	green.albedo_color = Color(0.1, 1.0, 0.3)
@@ -107,23 +105,21 @@ func create_scanner():
 	screen.material_override = green
 	camera.add_child(screen)
 
-	# Светящийся индикатор
-	var indicator = MeshInstance3D.new()
-	var indicator_mesh = SphereMesh.new()
-	indicator_mesh.radius = 0.035
-	indicator_mesh.height = 0.07
-	indicator.mesh = indicator_mesh
-	indicator.position = Vector3(0.35, -0.20, -0.84)
-	indicator.material_override = green
-	camera.add_child(indicator)
-
-	# Подсветка
 	var light = OmniLight3D.new()
-	light.position = Vector3(0.35, -0.22, -0.8)
+	light.position = Vector3(0.27, -0.18, -0.55)
 	light.light_color = Color(0.1, 1.0, 0.3)
 	light.light_energy = 0.5
-	light.omni_range = 1.5
+	light.omni_range = 0.8
 	camera.add_child(light)
+
+	var indicator = MeshInstance3D.new()
+	var indicator_mesh = SphereMesh.new()
+	indicator_mesh.radius = 0.025
+	indicator_mesh.height = 0.05
+	indicator.mesh = indicator_mesh
+	indicator.position = Vector3(0.27, -0.15, -0.61)
+	indicator.material_override = green
+	camera.add_child(indicator)
 
 func _physics_process(delta):
 	if not player:
@@ -198,41 +194,34 @@ func rotate_camera(delta):
 	camera.rotation.x = camera_rotation
 
 func generate_world():
-	# Дорога
 	create_box(Vector3(7, 0.13, 130), Vector3(0, 0.02, -55), Color(0.12, 0.13, 0.12))
 	create_box(Vector3(0.25, 0.02, 130), Vector3(-3.2, 0.10, -55), Color(0.35, 0.32, 0.22))
 	create_box(Vector3(0.25, 0.02, 130), Vector3(3.2, 0.10, -55), Color(0.35, 0.32, 0.22))
 
-	# Трава
 	for i in range(150):
 		var x = randf_range(-42, 42)
 		var z = randf_range(-115, 15)
 		if abs(x) > 5:
 			create_grass(Vector3(x, 0, z))
 
-	# Лес
 	for i in range(75):
 		var x = randf_range(-48, 48)
 		var z = randf_range(-110, 12)
 		if abs(x) > 5.5:
 			create_tree(Vector3(x, 0, z))
 
-	# Заброшенные здания
 	create_ruin(Vector3(-16, 0, -25), 1.0)
 	create_ruin(Vector3(17, 0, -43), 1.2)
 	create_ruin(Vector3(-22, 0, -65), 1.3)
 	create_ruin(Vector3(24, 0, -85), 1.0)
 
-	# Автобус
 	create_bus(Vector3(-11, 0, -48))
 
-	# Фонари
 	create_lamp(Vector3(-5, 0, -18))
 	create_lamp(Vector3(5, 0, -38))
 	create_lamp(Vector3(-5, 0, -62))
 	create_lamp(Vector3(5, 0, -88))
 
-	# Камни
 	for i in range(35):
 		var x = randf_range(-35, 35)
 		var z = randf_range(-100, 10)
