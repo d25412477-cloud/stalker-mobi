@@ -1,0 +1,33 @@
+
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://player.gd" id="1"]
+
+[sub_resource type="Environment" id="Environment_zone"]
+background_mode = 1
+background_color = Color(0.22, 0.27, 0.25, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.55, 0.58, 0.52, 1)
+ambient_light_energy = 0.7
+
+[sub_resource type="PlaneMesh" id="Ground"]
+size = Vector2(200, 200)
+
+[sub_resource type="StandardMaterial3D" id="GroundMaterial"]
+albedo_color = Color(0.19, 0.22, 0.16, 1)
+roughness = 1.0
+
+[node name="Zone" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_zone")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-45, -30, 0)
+light_energy = 0.8
+shadow_enabled = true
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.1, 0)
+mesh = SubResource("Ground")
+material_override = SubResource("GroundMaterial")
