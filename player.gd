@@ -79,47 +79,45 @@ func create_player():
 	create_scanner()
 
 func create_scanner():
+	var scanner = Node3D.new()
+	scanner.position = Vector3(0.30, -0.25, -1.25)
+	camera.add_child(scanner)
+
 	var body = MeshInstance3D.new()
 	var mesh = BoxMesh.new()
-	mesh.size = Vector3(0.13, 0.12, 0.32)
+	mesh.size = Vector3(0.10, 0.08, 0.22)
 	body.mesh = mesh
-	body.position = Vector3(0.27, -0.24, -0.48)
-
-	var metal = StandardMaterial3D.new()
-	metal.albedo_color = Color(0.12, 0.16, 0.14)
-	metal.metallic = 0.7
-	metal.roughness = 0.35
-	body.material_override = metal
-	camera.add_child(body)
+	body.material_override = make_material(Color(0.12, 0.16, 0.14))
+	scanner.add_child(body)
 
 	var screen = MeshInstance3D.new()
 	var screen_mesh = BoxMesh.new()
-	screen_mesh.size = Vector3(0.10, 0.015, 0.09)
+	screen_mesh.size = Vector3(0.075, 0.012, 0.065)
 	screen.mesh = screen_mesh
-	screen.position = Vector3(0.27, -0.17, -0.53)
+	screen.position = Vector3(0, 0.045, -0.025)
 
 	var green = StandardMaterial3D.new()
 	green.albedo_color = Color(0.1, 1.0, 0.3)
 	green.emission_enabled = true
 	green.emission = Color(0.1, 1.0, 0.3)
 	screen.material_override = green
-	camera.add_child(screen)
-
-	var light = OmniLight3D.new()
-	light.position = Vector3(0.27, -0.18, -0.55)
-	light.light_color = Color(0.1, 1.0, 0.3)
-	light.light_energy = 0.5
-	light.omni_range = 0.8
-	camera.add_child(light)
+	scanner.add_child(screen)
 
 	var indicator = MeshInstance3D.new()
-	var indicator_mesh = SphereMesh.new()
-	indicator_mesh.radius = 0.025
-	indicator_mesh.height = 0.05
-	indicator.mesh = indicator_mesh
-	indicator.position = Vector3(0.27, -0.15, -0.61)
+	var sphere = SphereMesh.new()
+	sphere.radius = 0.018
+	sphere.height = 0.036
+	indicator.mesh = sphere
+	indicator.position = Vector3(0, 0.05, -0.12)
 	indicator.material_override = green
-	camera.add_child(indicator)
+	scanner.add_child(indicator)
+
+	var light = OmniLight3D.new()
+	light.position = Vector3(0, 0.08, 0)
+	light.light_color = Color(0.1, 1.0, 0.3)
+	light.light_energy = 0.3
+	light.omni_range = 0.5
+	scanner.add_child(light)
 
 func _physics_process(delta):
 	if not player:
