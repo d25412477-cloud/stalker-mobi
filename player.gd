@@ -22,6 +22,7 @@ func _ready():
     create_world_collision()
     create_player()
     generate_world()
+    create_hud()
 
 func create_world_collision():
     var floor = StaticBody3D.new()
@@ -128,6 +129,97 @@ func rotate_camera(delta):
     camera_rotation -= delta.y * mouse_sensitivity
     camera_rotation = clamp(camera_rotation, -1.4, 1.4)
     camera.rotation.x = camera_rotation
+func generate_world():
+    # Дорога
+    create_box(
+        Vector3(5, 0.12, 100),
+        Vector3(0, 0.02, -40),
+        Color(0.16, 0.16, 0.14)
+    )
+
+    # Лес
+    for i in range(55):
+        var x = randf_range(-45, 45)
+        var z = randf_range(-85, 15)
+
+        if abs(x) < 6 or Vector2(x, z).length() < 12:
+            continue
+
+        create_tree(Vector3(x, 0, z))
+
+    # Заброшенные дома
+    create_house(Vector3(18, 0, -25))
+    create_house(Vector3(-20, 0, -42))
+    create_house(Vector3(22, 0, -65))
+
+func create_tree(pos: Vector3):
+    var trunk = CylinderMesh.new()
+    trunk.top_radius = 0.22
+    trunk.bottom_radius = 0.4
+    trunk.height = 5.5
+
+    var tree_trunk = MeshInstance3D.new()
+    tree_trunk.mesh = trunk
+    tree_trunk.position = pos + Vector3(0, 2.75, 0)
+
+    var wood = StandardMaterial3D.new()
+    wood.albedo_color = Color(0.22, 0.15, 0.09)
+    tree_trunk.material_override = wood
+    add_child(tree_trunk)
+
+    var leaves = ConeMesh.new()
+    leaves.bottom_radius = 2.3
+    leaves.height = 5.5
+
+    var foliage = MeshInstance3D.new()
+    foliage.mesh = leaves
+    foliage.position = pos + Vector3(0, 6.5, 0)
+
+    var green = StandardMaterial3D.new()
+    green.albedo_color = Color(0.12, 0.22, 0.12)
+    foliage.material_override = green
+    add_child(foliage)
+
+func create_house(pos: Vector3):
+    create_box(
+        Vector3(8, 4, 7),
+        pos + Vector3(0, 2, 0),
+        Color(0.30, 0.27, 0.21)
+    )
+
+    create_box(
+        Vector3(9, 0.5, 8),
+        pos + Vector3(0, 4.2, 0),
+        Color(0.12, 0.13, 0.12)
+    )
+
+    create_box(
+        Vector3(1.2, 1.5, 0.15),
+        pos + Vector3(0, 1.1, -3.58),
+        Color(0.12, 0.08, 0.05)
+    )
+
+    create_box(
+        Vector3(1.3, 1.2, 0.15),
+        pos + Vector3(-2.5, 2.5, -3.58),
+        Color(0.08, 0.12, 0.13)
+    )
+
+func create_box(size: Vector3, pos: Vector3, color: Color):
+    var mesh = BoxMesh.new()
+    mesh.size = size
+
+    var object = MeshInstance3D.new()
+    object.mesh = mesh
+    object.position = pos
+
+    var material = StandardMaterial3D.new()
+    material.albedo_color = color
+    material.roughness = 1.0
+
+    object.material_override = material
+    add_child(object)
+
 func generate_world():
     # Дорога
     create_box(
