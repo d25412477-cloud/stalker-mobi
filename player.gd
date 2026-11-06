@@ -26,19 +26,17 @@ func _ready():
 
 func create_environment():
 	var world_env = get_node_or_null("WorldEnvironment")
-	if world_env == null:
-		return
-
-	var env = Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.20, 0.25, 0.24)
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.48, 0.52, 0.47)
-	env.ambient_light_energy = 0.65
-	env.fog_enabled = true
-	env.fog_light_color = Color(0.48, 0.53, 0.49)
-	env.fog_density = 0.006
-	world_env.environment = env
+	if world_env:
+		var env = Environment.new()
+		env.background_mode = Environment.BG_COLOR
+		env.background_color = Color(0.20, 0.25, 0.24)
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+		env.ambient_light_color = Color(0.48, 0.52, 0.47)
+		env.ambient_light_energy = 0.65
+		env.fog_enabled = true
+		env.fog_light_color = Color(0.48, 0.53, 0.49)
+		env.fog_density = 0.006
+		world_env.environment = env
 
 	var sun = get_node_or_null("Sun")
 	if sun:
@@ -77,6 +75,55 @@ func create_player():
 	camera.current = true
 	camera.fov = 80
 	player.add_child(camera)
+
+	create_scanner()
+
+func create_scanner():
+	# Основной корпус сканера
+	var body = MeshInstance3D.new()
+	var mesh = BoxMesh.new()
+	mesh.size = Vector3(0.22, 0.18, 0.55)
+	body.mesh = mesh
+	body.position = Vector3(0.35, -0.32, -0.65)
+
+	var metal = StandardMaterial3D.new()
+	metal.albedo_color = Color(0.12, 0.16, 0.14)
+	metal.metallic = 0.7
+	metal.roughness = 0.35
+	body.material_override = metal
+	camera.add_child(body)
+
+	# Зелёный экран
+	var screen = MeshInstance3D.new()
+	var screen_mesh = BoxMesh.new()
+	screen_mesh.size = Vector3(0.16, 0.025, 0.16)
+	screen.mesh = screen_mesh
+	screen.position = Vector3(0.35, -0.23, -0.72)
+
+	var green = StandardMaterial3D.new()
+	green.albedo_color = Color(0.1, 1.0, 0.3)
+	green.emission_enabled = true
+	green.emission = Color(0.1, 1.0, 0.3)
+	screen.material_override = green
+	camera.add_child(screen)
+
+	# Светящийся индикатор
+	var indicator = MeshInstance3D.new()
+	var indicator_mesh = SphereMesh.new()
+	indicator_mesh.radius = 0.035
+	indicator_mesh.height = 0.07
+	indicator.mesh = indicator_mesh
+	indicator.position = Vector3(0.35, -0.20, -0.84)
+	indicator.material_override = green
+	camera.add_child(indicator)
+
+	# Подсветка
+	var light = OmniLight3D.new()
+	light.position = Vector3(0.35, -0.22, -0.8)
+	light.light_color = Color(0.1, 1.0, 0.3)
+	light.light_energy = 0.5
+	light.omni_range = 1.5
+	camera.add_child(light)
 
 func _physics_process(delta):
 	if not player:
@@ -156,7 +203,7 @@ func generate_world():
 	create_box(Vector3(0.25, 0.02, 130), Vector3(-3.2, 0.10, -55), Color(0.35, 0.32, 0.22))
 	create_box(Vector3(0.25, 0.02, 130), Vector3(3.2, 0.10, -55), Color(0.35, 0.32, 0.22))
 
-	# Заросли по сторонам дороги
+	# Трава
 	for i in range(150):
 		var x = randf_range(-42, 42)
 		var z = randf_range(-115, 15)
@@ -170,13 +217,13 @@ func generate_world():
 		if abs(x) > 5.5:
 			create_tree(Vector3(x, 0, z))
 
-	# Разрушенные здания
+	# Заброшенные здания
 	create_ruin(Vector3(-16, 0, -25), 1.0)
 	create_ruin(Vector3(17, 0, -43), 1.2)
 	create_ruin(Vector3(-22, 0, -65), 1.3)
 	create_ruin(Vector3(24, 0, -85), 1.0)
 
-	# Заброшенный автобус
+	# Автобус
 	create_bus(Vector3(-11, 0, -48))
 
 	# Фонари
@@ -185,7 +232,7 @@ func generate_world():
 	create_lamp(Vector3(-5, 0, -62))
 	create_lamp(Vector3(5, 0, -88))
 
-	# Камни и обломки
+	# Камни
 	for i in range(35):
 		var x = randf_range(-35, 35)
 		var z = randf_range(-100, 10)
@@ -237,11 +284,9 @@ func create_ruin(pos: Vector3, scale: float):
 	create_box(Vector3(0.5, 3, 5) * scale, pos + Vector3(4, 1.5, 0) * scale, wall_color)
 	create_box(Vector3(8, 0.35, 7) * scale, pos + Vector3(0, 4, 0) * scale, dark_color)
 
-	# Разбитые окна
 	create_box(Vector3(1.4, 1.1, 0.12) * scale, pos + Vector3(-2, 2.5, -3.3) * scale, Color(0.07, 0.12, 0.12))
 	create_box(Vector3(1.4, 1.1, 0.12) * scale, pos + Vector3(2, 2.5, -3.3) * scale, Color(0.07, 0.12, 0.12))
 
-	# Обломки у стен
 	create_rock(pos + Vector3(-5, 0, 2))
 	create_rock(pos + Vector3(5, 0, -2))
 
@@ -344,7 +389,7 @@ func create_hud():
 	ui.add_child(stamina)
 
 	var ammo = Label.new()
-	ammo.text = "30 / 120"
+	ammo.text = "СКАНЕР"
 	ammo.anchor_left = 1.0
 	ammo.anchor_right = 1.0
 	ammo.offset_left = -180
@@ -352,8 +397,8 @@ func create_hud():
 	ammo.offset_top = 30
 	ammo.offset_bottom = 70
 	ammo.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	ammo.add_theme_font_size_override("font_size", 25)
-	ammo.add_theme_color_override("font_color", Color.WHITE)
+	ammo.add_theme_font_size_override("font_size", 22)
+	ammo.add_theme_color_override("font_color", Color(0.2, 1.0, 0.4))
 	ui.add_child(ammo)
 
 	var crosshair = Label.new()
